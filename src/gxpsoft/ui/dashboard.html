@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GxPSoft — Decision Packet & 21 CFR Part 11 Review Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    [v-cloak] { display: none; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
+  <div id="app" v-cloak class="flex flex-col h-screen">
+    
+    <!-- Top Navigation -->
+    <header class="bg-slate-800 border-b border-slate-700 px-6 py-3 flex items-center justify-between shadow-md">
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 p-2 rounded-lg text-white">
+          <i class="fa-solid fa-dna text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            GxPSoft <span class="text-xs bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded font-mono">HITL Decision Console</span>
+          </h1>
+          <p class="text-xs text-slate-400">21 CFR Part 11 • EU Annex 11 • FDA QMSR (ISO 13485:2016)</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-4">
+        <div class="text-right">
+          <div class="text-xs text-slate-400">Reviewer Session</div>
+          <div class="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            Jane Doe (QA Lead)
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Split Layout -->
+    <main class="flex-1 flex overflow-hidden">
+      
+      <!-- Left Panel: Decision Packet & Structured Draft -->
+      <section class="w-7/12 border-r border-slate-800 flex flex-col bg-slate-900 overflow-y-auto">
+        
+        <!-- Case Header Banner -->
+        <div class="p-6 border-b border-slate-800 bg-slate-800/40">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono font-bold bg-slate-700 text-slate-200 px-2.5 py-1 rounded">{{ packet.case?.case_id || caseId }}</span>
+              <span class="text-xs font-semibold px-2.5 py-1 rounded" :class="severityBadgeClass(packet.case?.severity)">
+                {{ packet.case?.severity || 'PENDING' }}
+              </span>
+              <span class="text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded font-mono">
+                State: {{ packet.case?.state || 'LOADING' }}
+              </span>
+            </div>
+            <div class="text-xs text-slate-400 font-mono">
+              Batch: <span class="text-slate-200 font-bold">{{ packet.case?.batch_id || 'N/A' }}</span> | Bioreactor: <span class="text-slate-200 font-bold">BR-04</span>
+            </div>
+          </div>
+          <h2 class="text-xl font-bold text-slate-100 mb-1">{{ packet.case?.title }}</h2>
+          <p class="text-sm text-slate-300">{{ packet.case?.description }}</p>
+        </div>
+
+        <div class="p-6 space-y-6 flex-1">
+          
+          <!-- Event Triage & Telemetry -->
+          <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-bolt text-amber-400"></i> Triggering Operational Signal (MES SCADA)
+            </h3>
+            <div class="grid grid-cols-3 gap-3 text-xs mb-2">
+              <div class="bg-slate-900/60 p-2 rounded border border-slate-800">
+                <span class="text-slate-400">Peak Temp:</span> <span class="font-bold text-rose-400">39.4°C</span>
+              </div>
+              <div class="bg-slate-900/60 p-2 rounded border border-slate-800">
+                <span class="text-slate-400">Duration:</span> <span class="font-bold text-amber-400">22.5 min</span>
+              </div>
+              <div class="bg-slate-900/60 p-2 rounded border border-slate-800">
+                <span class="text-slate-400">Critical Limit:</span> <span class="font-bold text-slate-200">&gt; 38.5°C (&gt;10m)</span>
+              </div>
+            </div>
+            <p class="text-xs text-slate-300 bg-slate-900/40 p-2.5 rounded border border-slate-800">
+              <strong class="text-slate-200">Sentinel Triage:</strong> {{ packet.case?.metadata?.triage_rationale }}
+            </p>
+          </div>
+
+          <!-- 5-Why Root Cause Analysis -->
+          <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-sitemap text-indigo-400"></i> 5-Why Root Cause Tree (Agent Synthesized)
+            </h3>
+            <div class="space-y-2">
+              <div v-for="(why, index) in draftContent.five_why_analysis" :key="index" class="flex items-start space-x-3 text-xs">
+                <span class="bg-indigo-900/60 text-indigo-300 font-bold px-2 py-0.5 rounded text-[11px] font-mono border border-indigo-700/50">Why {{ index + 1 }}</span>
+                <span class="text-slate-200 flex-1 leading-relaxed">{{ Object.values(why)[0] }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Discrete Verifiable Claims -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-emerald-400"></i> Material Claims & Citations (Click to Inspect)
+              </h3>
+              <span class="text-xs text-slate-400 font-mono">{{ packet.claims?.length || 0 }} Grounded Claims</span>
+            </div>
+
+            <div class="space-y-3">
+              <div v-for="(claim, idx) in packet.claims" :key="claim.claim_id"
+                   class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/80 hover:border-indigo-500/50 transition-all cursor-pointer"
+                   :class="{'ring-2 ring-indigo-500 bg-slate-800': activeClaim?.claim_id === claim.claim_id}"
+                   @click="selectClaim(claim)">
+                <div class="flex items-start justify-between gap-3 mb-2">
+                  <span class="text-xs font-bold text-slate-200">Claim #{{ idx + 1 }}</span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[11px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded">
+                      {{ Math.round(claim.confidence * 100) }}% Confidence
+                    </span>
+                  </div>
+                </div>
+                <p class="text-xs text-slate-200 leading-relaxed mb-3">{{ claim.claim_text }}</p>
+
+                <!-- Citation Badges -->
+                <div class="flex flex-wrap gap-2">
+                  <button v-for="(cite, cIdx) in claim.citations" :key="cite.link_id"
+                          @click.stop="showCitation(cite)"
+                          class="text-[11px] font-mono bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-700/60 px-2.5 py-1 rounded-md flex items-center gap-1.5">
+                    <i class="fa-solid fa-bookmark text-indigo-400"></i>
+                    <span>Ref #{{ cIdx + 1 }}: {{ cite.doc_title.split(':')[0] }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Uncertainty Disclosure -->
+          <div class="bg-amber-950/20 border border-amber-700/40 rounded-xl p-4 text-xs text-amber-200">
+            <h4 class="font-bold flex items-center gap-2 mb-1 text-amber-300">
+              <i class="fa-solid fa-triangle-exclamation"></i> Uncertainty & Caveat Disclosure
+            </h4>
+            <p class="leading-relaxed">{{ draftContent.uncertainty_disclosure }}</p>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Right Panel: Side-by-Side Evidence Viewer & Audit Ledger -->
+      <section class="w-5/12 flex flex-col bg-slate-950">
+        
+        <!-- Tab Header -->
+        <div class="flex border-b border-slate-800 bg-slate-900/80 px-4">
+          <button @click="activeTab = 'evidence'"
+                  :class="activeTab === 'evidence' ? 'text-indigo-400 border-b-2 border-indigo-500 font-bold' : 'text-slate-400 hover:text-slate-200'"
+                  class="px-4 py-3 text-xs uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-file-contract"></i> Evidence Viewer
+          </button>
+          <button @click="activeTab = 'audit'"
+                  :class="activeTab === 'audit' ? 'text-indigo-400 border-b-2 border-indigo-500 font-bold' : 'text-slate-400 hover:text-slate-200'"
+                  class="px-4 py-3 text-xs uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-link"></i> Part 11 Audit Trail
+          </button>
+        </div>
+
+        <!-- Tab 1: Evidence Viewer -->
+        <div v-if="activeTab === 'evidence'" class="flex-1 p-6 overflow-y-auto space-y-4">
+          <div v-if="selectedCitation" class="space-y-4">
+            <div class="bg-slate-900 rounded-xl p-4 border border-slate-800">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-mono uppercase bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded">
+                  {{ selectedCitation.doc_type }}
+                </span>
+                <span class="text-xs text-slate-400 font-mono">Match: {{ Math.round(selectedCitation.relevance_score * 100) }}%</span>
+              </div>
+              <h4 class="text-sm font-bold text-slate-100 mb-1">{{ selectedCitation.doc_title }}</h4>
+              <div class="text-xs text-indigo-400 font-mono mb-3">Locator: {{ selectedCitation.locator }}</div>
+              
+              <div class="bg-slate-950 p-3 rounded-lg border border-indigo-900/50 text-xs font-mono text-emerald-300 leading-relaxed whitespace-pre-wrap">
+                {{ selectedCitation.quote_text }}
+              </div>
+            </div>
+            
+            <div class="text-xs text-slate-400 bg-slate-900/50 p-3 rounded-lg border border-slate-800 font-mono">
+              <div>Source URI: <span class="text-slate-200">{{ selectedCitation.source_uri }}</span></div>
+              <div>Evidence ID: <span class="text-slate-200">{{ selectedCitation.evidence_id }}</span></div>
+            </div>
+          </div>
+          <div v-else class="h-full flex flex-col items-center justify-center text-slate-500 text-xs">
+            <i class="fa-solid fa-arrow-pointer text-2xl mb-2 text-slate-600"></i>
+            Click any citation badge in the left panel to inspect raw source evidence.
+          </div>
+        </div>
+
+        <!-- Tab 2: Cryptographic Audit Trail -->
+        <div v-if="activeTab === 'audit'" class="flex-1 p-6 overflow-y-auto space-y-3 font-mono text-xs">
+          <div class="bg-emerald-950/30 border border-emerald-700/50 p-3 rounded-lg text-emerald-300 flex items-center justify-between mb-4">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> Hash Chain Integrity</span>
+            <span class="font-bold">VERIFIED</span>
+          </div>
+
+          <div v-for="entry in auditEntries" :key="entry.entry_id" class="bg-slate-900 p-3 rounded-lg border border-slate-800 space-y-1">
+            <div class="flex items-center justify-between text-slate-400 text-[11px]">
+              <span class="font-bold text-slate-200">#{{ entry.sequence_number }} {{ entry.event_type }}</span>
+              <span>{{ new Date(entry.timestamp).toLocaleTimeString() }}</span>
+            </div>
+            <div class="text-slate-400 text-[11px]">Actor: <span class="text-indigo-300">{{ entry.actor_id }}</span> ({{ entry.actor_type }})</div>
+            <div class="text-[10px] text-slate-500 truncate">Hash: {{ entry.entry_hash }}</div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Bottom GxP Control & E-Signature Bar -->
+    <footer class="bg-slate-800 border-t border-slate-700 px-6 py-4 flex items-center justify-between shadow-2xl">
+      <div class="flex items-center space-x-3">
+        <span class="text-xs font-bold uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1 rounded-md flex items-center gap-1.5">
+          <i class="fa-solid fa-lock"></i> Action Class A4 (Controlled GxP Action)
+        </span>
+        <span class="text-xs text-slate-300">
+          Electronic Signature mandatory to transition to <strong class="text-white">{{ packet.policy_gate?.target_state }}</strong>
+        </span>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button @click="showOverrideModal = true" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold rounded-lg transition-all">
+          <i class="fa-solid fa-pen-to-square mr-1"></i> Override / Redline
+        </button>
+        <button @click="showSignModal = true" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2">
+          <i class="fa-solid fa-signature"></i> Accept & Sign (21 CFR Part 11)
+        </button>
+      </div>
+    </footer>
+
+    <!-- Part 11 Electronic Signature Modal -->
+    <div v-if="showSignModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-file-signature text-indigo-400"></i> 21 CFR Part 11 Electronic Signature
+          </h3>
+          <button @click="showSignModal = false" class="text-slate-400 hover:text-white">&times;</button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block text-slate-400 mb-1">Qualified Signer</label>
+            <input type="text" value="Jane Doe (USER-QA-LEAD-01) — QA_LEAD" disabled class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-300">
+          </div>
+
+          <div>
+            <label class="block text-slate-400 mb-1">Legally Binding Signature Meaning</label>
+            <select v-model="signForm.meaning" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-200">
+              <option value="APPROVED_CLASSIFICATION">I approve deviation classification & containment</option>
+              <option value="APPROVED_ROOT_CAUSE">I confirm root cause investigation findings</option>
+              <option value="APPROVED_CAPA">I authorize CAPA implementation plan</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-400 mb-1">Approval Rationale / Comments</label>
+            <textarea v-model="signForm.rationale" rows="2" placeholder="Confirmed root cause aligns with calibration logs and SOP-PRC-042." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-200"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-slate-400 mb-1">Password / Security PIN</label>
+            <input v-model="signForm.password" type="password" placeholder="Enter password (LeadPass2026!)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-200">
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end space-x-3">
+          <button @click="showSignModal = false" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-bold rounded-lg">Cancel</button>
+          <button @click="submitSignature" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg flex items-center gap-2">
+            <i class="fa-solid fa-check-double"></i> Execute Legal E-Signature
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const caseId = ref(window.location.pathname.split('/').pop() || 'DEV-2026-0001');
+        const packet = ref({});
+        const activeTab = ref('evidence');
+        const activeClaim = ref(null);
+        const selectedCitation = ref(null);
+        const auditEntries = ref([]);
+        const showSignModal = ref(false);
+        const showOverrideModal = ref(false);
+
+        const signForm = ref({
+          meaning: 'APPROVED_CLASSIFICATION',
+          rationale: 'Reviewed and confirmed probe drift as primary root cause per SOP-PRC-042.',
+          password: 'LeadPass2026!'
+        });
+
+        const draftContent = computed(() => {
+          return packet.value.latest_draft?.structured_content || {};
+        });
+
+        const fetchPacket = async () => {
+          try {
+            const res = await fetch(`/api/v1/cases/${caseId.value}/decision-packet`);
+            if (res.ok) {
+              packet.value = await res.json();
+              if (packet.value.claims?.length > 0) {
+                selectClaim(packet.value.claims[0]);
+              }
+            }
+          } catch (e) {
+            console.error('Error fetching decision packet:', e);
+          }
+        };
+
+        const fetchAuditTrail = async () => {
+          try {
+            const res = await fetch(`/api/v1/cases/${caseId.value}/audit-trail`);
+            if (res.ok) {
+              const data = await res.json();
+              auditEntries.value = data.entries || [];
+            }
+          } catch (e) {
+            console.error('Error fetching audit trail:', e);
+          }
+        };
+
+        const selectClaim = (claim) => {
+          activeClaim.value = claim;
+          if (claim.citations?.length > 0) {
+            selectedCitation.value = claim.citations[0];
+          }
+        };
+
+        const showCitation = (cite) => {
+          selectedCitation.value = cite;
+          activeTab.value = 'evidence';
+        };
+
+        const submitSignature = async () => {
+          try {
+            const res = await fetch(`/api/v1/cases/${caseId.value}/review/approve-and-sign`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: 'USER-QA-LEAD-01',
+                password_or_pin: signForm.value.password,
+                meaning: signForm.value.meaning,
+                rationale: signForm.value.rationale
+              })
+            });
+            if (res.ok) {
+              showSignModal.value = false;
+              alert('Electronic Signature successfully verified and committed to Part 11 audit ledger!');
+              await fetchPacket();
+              await fetchAuditTrail();
+            } else {
+              const err = await res.json();
+              alert('Signature error: ' + (err.detail || JSON.stringify(err)));
+            }
+          } catch (e) {
+            alert('Error submitting signature: ' + e.message);
+          }
+        };
+
+        const severityBadgeClass = (sev) => {
+          if (sev === 'MAJOR') return 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+          if (sev === 'CRITICAL') return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
+          return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
+        };
+
+        onMounted(() => {
+          fetchPacket();
+          fetchAuditTrail();
+        });
+
+        return {
+          caseId,
+          packet,
+          draftContent,
+          activeTab,
+          activeClaim,
+          selectedCitation,
+          auditEntries,
+          showSignModal,
+          showOverrideModal,
+          signForm,
+          selectClaim,
+          showCitation,
+          submitSignature,
+          severityBadgeClass
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

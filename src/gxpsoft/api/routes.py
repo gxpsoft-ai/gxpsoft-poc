@@ -1,7 +1,9 @@
 """REST API routes for GxP events, state transitions, signatures, and audit trails."""
 
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from gxpsoft.core.policy import PolicyViolationError
@@ -11,10 +13,13 @@ from gxpsoft.core.state_machine import CaseStateMachine, InvalidTransitionError
 from gxpsoft.ingestion.service import DuplicateEventError, IngestionService
 from gxpsoft.models.audit import AuditLogEntry, SignatureRecord
 from gxpsoft.models.case import QualityCase
-from gxpsoft.models.enums import AuthorType, CaseState, SignatureMeaning
+from gxpsoft.models.enums import AuthorType, CaseSeverity, CaseState, SignatureMeaning
 from gxpsoft.models.event import QualityEvent
+from gxpsoft.review.packet_builder import DecisionPacket, DecisionPacketBuilder
+from gxpsoft.review.service import HumanReviewService, OverrideRationaleRequiredError
 
 router = APIRouter(prefix="/api/v1")
+ui_router = APIRouter()
 
 
 class SignRequest(BaseModel):
@@ -45,6 +50,25 @@ class AuditTrailResponse(BaseModel):
     entry_count: int
     integrity_verified: bool
     entries: List[AuditLogEntry]
+
+
+class RedlineRequest(BaseModel):
+    user_id: str
+    updated_structured_content: Optional[Dict[str, Any]] = None
+    severity_override: Optional[CaseSeverity] = None
+    override_rationale: Optional[str] = None
+
+
+class ApproveAndSignRequest(BaseModel):
+    user_id: str
+    password_or_pin: str
+    meaning: SignatureMeaning
+    rationale: str
+
+
+class ApproveAndSignResponse(BaseModel):
+    case: QualityCase
+    signature: SignatureRecord
 
 
 @router.post("/events/ingest", response_model=IngestResponse, status_code=status.HTTP_201_CREATED)
@@ -81,6 +105,52 @@ async def get_case(case_id: str) -> QualityCase:
             detail=f"QualityCase '{case_id}' not found."
         )
     return case
+
+
+@router.get("/cases/{case_id}/decision-packet", response_model=DecisionPacket)
+async def get_decision_packet(case_id: str) -> DecisionPacket:
+    """Compiles the structured Decision Packet for human review ('QMS opens the human')."""
+    try:
+        return DecisionPacketBuilder.build_packet(case_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.post("/cases/{case_id}/review/redline", response_model=QualityCase)
+async def record_redline(case_id: str, req: RedlineRequest) -> QualityCase:
+    """Records human edits and severity overrides with mandatory rationale."""
+    try:
+        return HumanReviewService.record_redline(
+            case_id=case_id,
+            user_id=req.user_id,
+            updated_structured_content=req.updated_structured_content,
+            severity_override=req.severity_override,
+            override_rationale=req.override_rationale
+        )
+    except OverrideRationaleRequiredError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.post("/cases/{case_id}/review/approve-and-sign", response_model=ApproveAndSignResponse)
+async def approve_and_sign(case_id: str, req: ApproveAndSignRequest) -> ApproveAndSignResponse:
+    """Authenticates user, applies 21 CFR Part 11 e-signature, and transitions state."""
+    try:
+        case, sig = HumanReviewService.approve_and_sign(
+            case_id=case_id,
+            user_id=req.user_id,
+            password_or_pin=req.password_or_pin,
+            meaning=req.meaning,
+            rationale=req.rationale
+        )
+        return ApproveAndSignResponse(case=case, signature=sig)
+    except SignatureVerificationError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+    except PolicyViolationError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.post("/signatures/sign", response_model=SignatureRecord, status_code=status.HTTP_201_CREATED)
@@ -158,3 +228,13 @@ async def get_audit_trail(case_id: str) -> AuditTrailResponse:
         integrity_verified=is_valid,
         entries=entries
     )
+
+
+# UI Routes
+@ui_router.get("/ui/case/{case_id}", response_class=HTMLResponse)
+async def serve_case_ui(case_id: str) -> HTMLResponse:
+    """Serves the interactive decision packet review console."""
+    html_path = Path(__file__).parent.parent / "ui" / "dashboard.html"
+    if html_path.exists():
+        return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>Dashboard UI not found</h1>", status_code=404)

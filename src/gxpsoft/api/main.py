@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from gxpsoft.api.routes import router
+from gxpsoft.api.routes import router, ui_router
 
 
 def create_app() -> FastAPI:
@@ -23,6 +23,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(router)
+    app.include_router(ui_router)
     return app
 
 
