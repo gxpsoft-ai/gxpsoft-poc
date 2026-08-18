@@ -20,6 +20,8 @@ from gxpsoft.models.enums import AuthorType, CaseSeverity, CaseState, SignatureM
 from gxpsoft.models.event import QualityEvent
 from gxpsoft.review.packet_builder import DecisionPacket, DecisionPacketBuilder
 from gxpsoft.review.service import HumanReviewService, OverrideRationaleRequiredError
+from gxpsoft.evals.runner import GoldenEvalRunner, GoldenEvalSuiteReport
+from gxpsoft.evals.validation_report import ValidationReportGenerator, ValidationSummaryReport
 
 router = APIRouter(prefix="/api/v1")
 ui_router = APIRouter()
@@ -273,6 +275,21 @@ async def get_audit_trail(case_id: str) -> AuditTrailResponse:
         integrity_verified=is_valid,
         entries=entries
     )
+
+
+# Evals and Validation Routes
+@router.post("/evals/run", response_model=GoldenEvalSuiteReport)
+async def run_golden_evals() -> GoldenEvalSuiteReport:
+    """Executes the full suite of 5 regulated Golden Evaluation cases."""
+    fixtures_path = Path(__file__).parent.parent.parent.parent / "fixtures"
+    return GoldenEvalRunner.run_all(fixtures_path)
+
+
+@router.get("/evals/validation-summary-report", response_model=ValidationSummaryReport)
+async def get_validation_summary_report() -> ValidationSummaryReport:
+    """Generates the formal GAMP 5 / CSA Validation Summary Report."""
+    fixtures_path = Path(__file__).parent.parent.parent.parent / "fixtures"
+    return ValidationReportGenerator.generate_report(fixtures_path)
 
 
 # UI Routes
