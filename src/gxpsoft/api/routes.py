@@ -6,6 +6,9 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
+from gxpsoft.agents.capa import CAPAAgent
+from gxpsoft.capa.effectiveness import EffectivenessMonitor
+from gxpsoft.capa.export import DecisionLineageExport, DecisionLineageExporter
 from gxpsoft.core.policy import PolicyViolationError
 from gxpsoft.core.repository import repo
 from gxpsoft.core.signature import SignatureService, SignatureVerificationError
@@ -69,6 +72,11 @@ class ApproveAndSignRequest(BaseModel):
 class ApproveAndSignResponse(BaseModel):
     case: QualityCase
     signature: SignatureRecord
+
+
+class VerifyEffectivenessRequest(BaseModel):
+    batch_results: List[Dict[str, Any]]
+    evaluator_id: str = "EFFECTIVENESS_MONITOR_SYSTEM"
 
 
 @router.post("/events/ingest", response_model=IngestResponse, status_code=status.HTTP_201_CREATED)
@@ -149,6 +157,43 @@ async def approve_and_sign(case_id: str, req: ApproveAndSignRequest) -> ApproveA
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except PolicyViolationError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post("/cases/{case_id}/capa/generate")
+async def generate_capa(case_id: str) -> Dict[str, Any]:
+    """Generates a structured CAPA action plan tied directly to confirmed root-cause claims."""
+    try:
+        return CAPAAgent.generate_capa(case_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post("/cases/{case_id}/capa/verify")
+async def verify_effectiveness(case_id: str, req: VerifyEffectivenessRequest) -> Dict[str, Any]:
+    """Evaluates post-implementation production telemetry against CAPA effectiveness criteria."""
+    try:
+        return EffectivenessMonitor.evaluate_batch_results(
+            case_id=case_id,
+            batch_results=req.batch_results,
+            evaluator_id=req.evaluator_id
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/cases/{case_id}/export/decision-lineage", response_model=DecisionLineageExport)
+async def export_decision_lineage(case_id: str) -> DecisionLineageExport:
+    """Generates 1-click reconstructable decision lineage regulatory export dossier."""
+    try:
+        return DecisionLineageExporter.generate_export(case_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 

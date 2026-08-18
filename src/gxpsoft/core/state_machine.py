@@ -44,6 +44,11 @@ TRANSITION_RULES: Dict[Tuple[CaseState, CaseState], Tuple[ActionClass, str, Opti
         "POL-005: Agent or human stages RCA hypotheses and investigation draft",
         None
     ),
+    (CaseState.HUMAN_CLASSIFICATION_APPROVED, CaseState.ROOT_CAUSE_CONFIRMED): (
+        ActionClass.A4_CONTROLLED_GXP_ACTION,
+        "POL-006B: Qualified human authorizes root cause from classification approval",
+        SignatureMeaning.APPROVED_ROOT_CAUSE
+    ),
     (CaseState.INVESTIGATION_DRAFTED, CaseState.ROOT_CAUSE_CONFIRMED): (
         ActionClass.A4_CONTROLLED_GXP_ACTION,
         "POL-006: Qualified human authorizes root cause and investigation findings",
