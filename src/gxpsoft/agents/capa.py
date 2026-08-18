@@ -9,6 +9,7 @@ from pydantic_ai import Agent
 
 from gxpsoft.core.ai_config import DEFAULT_OLLAMA_MODEL, get_agent_model, is_ollama_online
 from gxpsoft.core.crypto import compute_sha256
+from gxpsoft.core.observability import observe
 from gxpsoft.core.repository import repo
 from gxpsoft.core.state_machine import CaseStateMachine
 from gxpsoft.models.agent_run import AgentRun, DraftArtifact
@@ -52,6 +53,7 @@ class CAPAAgent:
     pydantic_agent: Agent[None, CAPAPlanOutput] = create_capa_pydantic_agent()
 
     @classmethod
+    @observe(name="CAPAAgent.generate_capa", as_type="agent")
     def generate_capa(cls, case_id: str) -> Dict[str, Any]:
         """Generates a structured CAPA action plan tied directly to confirmed root-cause claims via Pydantic AI."""
         start_time = time.perf_counter()

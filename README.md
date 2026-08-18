@@ -177,6 +177,18 @@ uv run uvicorn gxpsoft.api.main:app --reload --port 8000
 
 * **Interactive Review Console:** `http://localhost:8000/ui/case/DEV-2026-0001`
 * **Interactive OpenAPI Docs:** `http://localhost:8000/docs`
+* **Langfuse Observability UI:** `http://localhost:3000`
+
+### 5. Observability & Tracing (Langfuse)
+GxPSoft is fully instrumented with **Langfuse** for agent tracing, tool execution latency, and human review gate tracking.
+```bash
+# Configure local Langfuse (defaults to http://localhost:3000)
+cp .env.example .env
+
+# Run live end-to-end pipeline with muse-glimmer via Ollama and Langfuse tracing:
+uv run python scripts/test_live_muse_glimmer.py
+```
+Open `http://localhost:3000` to inspect live agent execution traces, tool arguments, LLM token usages, and Part 11 electronic signatures.
 
 ---
 

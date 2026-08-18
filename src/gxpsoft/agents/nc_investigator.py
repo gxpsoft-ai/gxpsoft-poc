@@ -9,6 +9,7 @@ from pydantic_ai import Agent
 
 from gxpsoft.core.ai_config import DEFAULT_OLLAMA_MODEL, get_agent_model, is_ollama_online
 from gxpsoft.core.crypto import compute_sha256
+from gxpsoft.core.observability import observe
 from gxpsoft.core.repository import repo
 from gxpsoft.core.state_machine import CaseStateMachine
 from gxpsoft.models.agent_run import AgentRun
@@ -54,6 +55,7 @@ class NCInvestigatorAgent:
     pydantic_agent: Agent[None, NCInvestigationOutput] = create_nc_pydantic_agent()
 
     @classmethod
+    @observe(name="NCInvestigatorAgent.investigate", as_type="agent")
     def investigate(cls, case_id: str) -> Dict[str, Any]:
         """Orchestrates cross-system evidence gathering, RCA hypotheses, and draft artifact staging via Pydantic AI."""
         start_time = time.perf_counter()

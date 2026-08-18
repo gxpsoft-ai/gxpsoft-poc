@@ -3,6 +3,7 @@
 import time
 from typing import Any, Callable, Dict, Optional, Tuple
 
+from gxpsoft.core.observability import observe
 from gxpsoft.core.policy import PolicyEngine, PolicyViolationError
 from gxpsoft.core.repository import repo
 from gxpsoft.models.agent_run import ToolCall
@@ -37,6 +38,7 @@ class ToolGateway:
     """Governed interceptor executing tools with strict GxP policy checks and provenance."""
 
     @staticmethod
+    @observe(name="ToolGateway.invoke", as_type="tool")
     def invoke(
         tool_name: str,
         arguments: Dict[str, Any],

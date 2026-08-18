@@ -9,6 +9,7 @@ from pydantic_ai import Agent
 
 from gxpsoft.core.ai_config import DEFAULT_OLLAMA_MODEL, get_agent_model, is_ollama_online
 from gxpsoft.core.crypto import compute_sha256
+from gxpsoft.core.observability import observe
 from gxpsoft.core.repository import repo
 from gxpsoft.core.state_machine import CaseStateMachine
 from gxpsoft.models.agent_run import AgentRun
@@ -52,6 +53,7 @@ class SentinelAgent:
     pydantic_agent: Agent[None, SentinelTriageOutput] = create_sentinel_pydantic_agent()
 
     @classmethod
+    @observe(name="SentinelAgent.evaluate_event", as_type="agent")
     def evaluate_event(cls, event: QualityEvent, case: QualityCase) -> Dict[str, Any]:
         """Analyzes an operational event using Pydantic AI, queries relevant SOPs, and sets initial case severity."""
         start_time = time.perf_counter()

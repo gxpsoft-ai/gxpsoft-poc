@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional, Tuple
 
 from gxpsoft.core.crypto import compute_sha256
+from gxpsoft.core.observability import observe
 from gxpsoft.core.policy import QUALIFIED_USERS
 from gxpsoft.core.repository import repo
 from gxpsoft.core.signature import SignatureService
@@ -79,6 +80,7 @@ class HumanReviewService:
         return case
 
     @staticmethod
+    @observe(name="HumanReviewService.approve_and_sign", as_type="guardrail")
     def approve_and_sign(
         case_id: str,
         user_id: str,

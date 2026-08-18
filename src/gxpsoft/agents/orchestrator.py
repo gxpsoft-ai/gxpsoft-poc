@@ -4,6 +4,7 @@ from typing import Any, Dict, Tuple
 
 from gxpsoft.agents.nc_investigator import NCInvestigatorAgent
 from gxpsoft.agents.sentinel import SentinelAgent
+from gxpsoft.core.observability import observe
 from gxpsoft.ingestion.service import IngestionService
 from gxpsoft.models.case import QualityCase
 from gxpsoft.models.event import QualityEvent
@@ -13,6 +14,7 @@ class InvestigationPipeline:
     """Coordinates autonomous event intake, triage, multi-system investigation, and draft staging."""
 
     @staticmethod
+    @observe(name="InvestigationPipeline.run_pipeline", as_type="chain")
     def run_pipeline(raw_event_dict: Dict[str, Any]) -> Tuple[QualityEvent, QualityCase, Dict[str, Any]]:
         """Executes the complete autonomous investigation loop up to the human review gate."""
         # Step 1: Ingest operational event
