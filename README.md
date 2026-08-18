@@ -23,7 +23,7 @@ A production-ready reference implementation of an **AI-Agent-First, HITL-Second 
    * $A_4$ (Controlled GxP Actions): **Human authorization + e-signature mandatory.**
    * $A_5$ (Prohibited): Technically impossible (e.g. bypassing approvals, simulating human signatures).
 5. **Auditability Means Reconstructability:**
-   * Decision lineage captures raw event hashes, model/prompt versions (`gemini-3.7-flash`), retrieved citations, tool calls, human redlines, and forward-chained SHA-256 audit ledger records.
+   * Decision lineage captures raw event hashes, model/prompt versions (`muse-glimmer` via Pydantic AI & Ollama), retrieved citations, tool calls, human redlines, and forward-chained SHA-256 audit ledger records.
 
 ---
 
