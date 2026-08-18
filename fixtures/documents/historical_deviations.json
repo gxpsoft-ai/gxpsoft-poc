@@ -1,0 +1,26 @@
+[
+  {
+    "deviation_id": "DEV-2025-104",
+    "title": "Bioreactor BR-02 Temperature Spike During Fermentation",
+    "occurred_date": "2025-08-14",
+    "equipment_id": "BR-02",
+    "product_id": "PROD-MAB-701",
+    "severity": "MAJOR",
+    "root_cause_category": "EQUIPMENT",
+    "confirmed_root_cause": "Cooling water jacket pneumatic valve solenoid stickiness caused delayed response to cooling loop command.",
+    "capa_id": "CAPA-2025-042",
+    "capa_action": "Replaced solenoid valve SV-204 on BR-02 and added 6-month preventive maintenance lubrication cycle."
+  },
+  {
+    "deviation_id": "DEV-2025-312",
+    "title": "Temperature sensor RTD drift on BR-01 leading to false heater activation",
+    "occurred_date": "2025-11-02",
+    "equipment_id": "BR-01",
+    "product_id": "PROD-MAB-701",
+    "severity": "MAJOR",
+    "root_cause_category": "EQUIPMENT",
+    "confirmed_root_cause": "Probe RTD-01A was overdue for 90-day NIST calibration by 14 days and had drifted -1.8°C low, causing the control loop to overheat the vessel.",
+    "capa_id": "CAPA-2025-089",
+    "capa_action": "Recalibrated RTD-01A, initiated electronic calibration tracking log in CMMS, and quarantined affected lot."
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "event_id": "EVT-LIMS-20260818-002",
+  "event_type": "LIMS_OOS_ASSAY",
+  "source_system": "LABWARE_LIMS",
+  "source_record_id": "SAMPLE-BIO2026-088-QC-FINAL",
+  "source_location": "QC Analytical Lab, Bench 7",
+  "occurred_at": "2026-08-18T10:30:00Z",
+  "schema_version": "1.0",
+  "tenant_id": "pharma-corp-global",
+  "site_id": "SITE-SF-01",
+  "product_id": "PROD-MAB-701",
+  "batch_id": "BIO-2026-088",
+  "idempotency_key": "lims:BIO-2026-088:potency_oos:20260818103000",
+  "payload": {
+    "sample_id": "SMP-99412",
+    "test_name": "RP-HPLC Monoclonal Purity & Potency",
+    "assay_type": "FINAL_DRUG_SUBSTANCE_RELEASE",
+    "test_result": 84.2,
+    "unit": "Percent_Purity",
+    "specification": {
+      "min": 90.0,
+      "max": 100.0
+    },
+    "disposition": "OUT_OF_SPECIFICATION",
+    "analyst_id": "USER-RSMITH-219",
+    "instrument_id": "HPLC-AGILENT-1290-03"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "equipment_id": "BR-04",
+  "equipment_name": "2000L Single-Use Bioreactor System #4",
+  "location": "Cleanroom Suite 204",
+  "status": "OPERATIONAL",
+  "sensors": [
+    {
+      "sensor_id": "RTD-04B",
+      "parameter": "Temperature",
+      "calibrated_by": "CAL-TECH-INSTRUMENTS-LLC",
+      "last_calibration_date": "2025-11-10T14:00:00Z",
+      "calibration_interval_days": 90,
+      "calibration_due_date": "2026-02-08T14:00:00Z",
+      "calibration_status": "EXPIRED",
+      "days_overdue_as_of_event": 10,
+      "certificate_number": "CAL-CERT-2025-8819",
+      "calibration_notes": "Probe showed slight negative drift (-0.2°C) during last cycle. Recalibration required by 2026-02-08."
+    },
+    {
+      "sensor_id": "DO-OPT-04",
+      "parameter": "Dissolved_Oxygen",
+      "last_calibration_date": "2026-01-12T09:30:00Z",
+      "calibration_interval_days": 90,
+      "calibration_due_date": "2026-04-12T09:30:00Z",
+      "calibration_status": "VALID"
+    },
+    {
+      "sensor_id": "PH-PROBE-04",
+      "parameter": "pH",
+      "last_calibration_date": "2026-02-01T11:00:00Z",
+      "calibration_interval_days": 30,
+      "calibration_due_date": "2026-03-03T11:00:00Z",
+      "calibration_status": "VALID"
+    }
+  ]
+}

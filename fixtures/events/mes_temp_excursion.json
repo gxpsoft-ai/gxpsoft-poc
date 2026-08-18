@@ -1,0 +1,32 @@
+{
+  "event_id": "EVT-MES-20260818-001",
+  "event_type": "MES_TEMP_EXCURSION",
+  "source_system": "MES_SCADA_EMERSON",
+  "source_record_id": "ALARM-BR04-98124",
+  "source_location": "Building 3, Cleanroom Suite 204, Bioreactor Station 4",
+  "occurred_at": "2026-08-18T08:14:22Z",
+  "schema_version": "1.0",
+  "tenant_id": "pharma-corp-global",
+  "site_id": "SITE-SF-01",
+  "product_id": "PROD-MAB-701",
+  "batch_id": "BIO-2026-088",
+  "idempotency_key": "mes:BR-04:BIO-2026-088:temp_excursion:20260818081422",
+  "payload": {
+    "equipment_id": "BR-04",
+    "sensor_id": "RTD-04B",
+    "parameter_name": "Fermentation_Temperature",
+    "unit": "Celsius",
+    "setpoint": 37.0,
+    "target_range": {
+      "lower_limit": 36.5,
+      "upper_limit": 37.5
+    },
+    "peak_value": 39.4,
+    "duration_minutes": 22.5,
+    "dissolved_oxygen_percent": 18.2,
+    "rpm": 120,
+    "active_recipe_step": "STEP_04_FEED_PHASE_DAY_3",
+    "operator_on_duty": "USER-JDOE-441",
+    "alarm_severity_code": "CRIT_HIGH_TEMP"
+  }
+}

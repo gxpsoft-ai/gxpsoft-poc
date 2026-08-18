@@ -1,0 +1,38 @@
+{
+  "operators": [
+    {
+      "user_id": "USER-JDOE-441",
+      "full_name": "John Doe",
+      "job_title": "Senior Bioprocess Technician",
+      "site_id": "SITE-SF-01",
+      "qualifications": [
+        {
+          "sop_id": "SOP-PRC-042",
+          "sop_version": "3.1",
+          "training_completed_date": "2025-06-15",
+          "status": "QUALIFIED"
+        },
+        {
+          "sop_id": "SOP-QMS-015",
+          "sop_version": "4.0",
+          "training_completed_date": "2026-01-20",
+          "status": "QUALIFIED"
+        }
+      ]
+    },
+    {
+      "user_id": "USER-RSMITH-219",
+      "full_name": "Rachel Smith",
+      "job_title": "QC Analyst III",
+      "site_id": "SITE-SF-01",
+      "qualifications": [
+        {
+          "sop_id": "SOP-QC-088",
+          "sop_version": "2.0",
+          "training_completed_date": "2025-09-10",
+          "status": "QUALIFIED"
+        }
+      ]
+    }
+  ]
+}

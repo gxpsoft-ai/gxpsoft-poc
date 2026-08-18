@@ -1,0 +1,42 @@
+{
+  "batch_id": "BIO-2026-088",
+  "product_id": "PROD-MAB-701",
+  "product_name": "Anti-IL6 Monoclonal Antibody (IgG1)",
+  "manufacturing_site": "SITE-SF-01",
+  "batch_record_id": "MBR-MAB-701-REV05",
+  "start_date": "2026-08-15T06:00:00Z",
+  "planned_harvest_date": "2026-08-25T18:00:00Z",
+  "current_stage": "FEED_STAGE_DAY_3",
+  "assigned_bioreactor": "BR-04",
+  "lead_operator": "USER-JDOE-441",
+  "bill_of_materials": [
+    {
+      "material_id": "MAT-MED-09",
+      "material_name": "Chemically Defined Basal Medium",
+      "lot_number": "LOT-MED-9912",
+      "expiry_date": "2026-12-31",
+      "status": "APPROVED"
+    },
+    {
+      "material_id": "MAT-GLUC-01",
+      "material_name": "D-Glucose Feed Solution 45%",
+      "lot_number": "LOT-GLUC-4112",
+      "expiry_date": "2027-01-15",
+      "status": "APPROVED"
+    }
+  ],
+  "in_process_samples": [
+    {
+      "sample_id": "SMP-DAY3-CELLVIAB",
+      "time": "2026-08-18T07:00:00Z",
+      "viable_cell_density": "18.5 x 10^6 cells/mL",
+      "viability_percent": 96.5
+    },
+    {
+      "sample_id": "SMP-DAY3-POST-EXCURSION",
+      "time": "2026-08-18T09:00:00Z",
+      "viable_cell_density": "14.1 x 10^6 cells/mL",
+      "viability_percent": 78.4
+    }
+  ]
+}
